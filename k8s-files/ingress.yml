@@ -1,15 +1,15 @@
+#kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml #-install ingress contr
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: k8s-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /   # strip prefix so backend serves "/"
 spec:
   ingressClassName: nginx
   rules:
-    - host: rittik.shop
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
@@ -18,7 +18,6 @@ spec:
                 name: main-service
                 port:
                   number: 80
-
           - path: /aws
             pathType: Prefix
             backend:
@@ -26,7 +25,6 @@ spec:
                 name: aws-service
                 port:
                   number: 80
-
           - path: /azure
             pathType: Prefix
             backend:
@@ -34,7 +32,6 @@ spec:
                 name: azure-service
                 port:
                   number: 80
-
           - path: /gcp
             pathType: Prefix
             backend:
