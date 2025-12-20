@@ -1,0 +1,104 @@
+gitops/argocd 
+----------------------
+
+create one cluster , ng 
+one client instance to connect 
+
+kubectl install
+-------------------
+curl -LO https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl
+
+chmod +x kubectl
+
+sudo mv kubectl /usr/local/bin/
+
+kubectl version --client
+
+configure 
+-------------
+aws configure  or you can add iam role 
+add access key and secret key 
+
+
+aws eks update-kubeconfig --region us-east-1 --name <clustername>
+
+install argocd
+--------------------
+
+kubectl create namespace argocd   ----> argocd namespace created 
+
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml   ---->install argocd
+
+kubectl get all -n argocd         ---------->to see the pods 
+
+kubectl edit svc argocd-server -n argocd  #enable Node Port
+  change the cluster ip to NodePort svc
+
+kubectl get secret argocd-initial-admin-secret -n argocd -o yaml 
+  decode the secret password   echo "secret value" | base64 --decode
+
+how to access the argocd
+-----------------------------------
+ kubectl get all -n argocd
+	(see in which port the argocd server is running )
+
+ kubectl get nodes 
+  
+access
+------
+externalip : argocd serverport  
+
+enter username :admin
+password : decoded password
+
+argocd inside 
+------------
+
+new app
+give an application name 
+project name : default 
+sync policy : automatic 
+give repo url : 
+path 
+and name space 
+create 
+
+if you have image inside the eks then use the image in the iamge in yaml file 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: 211739080894.dkr.ecr.us-east-1.amazonaws.com/hotstar-nodejs-project:latest
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 3000       # External port   
+      targetPort: 3000 # Container port  <you can change the ports 80 >
+
+---------------
+if you give another port then use that port after the load balancer
